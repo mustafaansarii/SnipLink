@@ -1,0 +1,9 @@
+Flask
+Flask-Bcrypt
+Flask-Login
+werkzeug
+authlib
+python-dotenv
+gunicorn
+requests
+Flask-Mail

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Editor - {{ file_id }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.0/min/vs/loader.js"></script>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='code-slash.svg') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e1e1e, #2d2d2d);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: rgba(33, 37, 41, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .navbar-brand:hover {
+            color: #0d6efd !important;
+            transition: color 0.3s ease;
+        }
+
+        .btn {
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .custom-modal-content {
+            background-color: #393939;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            position: absolute;
+            right: 20px;
+            top: 60px;
+            color: #fff;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: rgb(251, 245, 245);
+            cursor: pointer;
+        }
+
+        #editor {
+            flex-grow: 1;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand me-4" href="/">SnipLink</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('create_new_file') }}">Create New File</a>
+                    </li>
+                    <li class="nav-item">
+                        <label for="file-upload" class="nav-link" style="cursor: pointer;">
+                            Upload File
+                            <input type="file" id="file-upload" style="display: none;" accept=".txt,.java,.py,.js,.html,.css,.json,.php,.c,.cpp,.cs,.go,.rb,.ts,.kt,.swift">
+                        </label>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <form action="/editor/{{ file_id }}" method="POST" id="codeForm" class="me-2">
+                        <input type="hidden" name="code" id="codeInput">
+                        <button type="submit" class="btn btn-success">Share</button>
+                    </form>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-danger ms-2">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-success ms-2">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div id="myModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <span class="close">&times;</span>
+            <h2>Share Code</h2>
+            <p>Anyone with access to this URL will see your code in real time.</p>
+            <label for="share-url">Share this URL</label>
+            <input type="text" id="share-url" value="{{ request.url }}" readonly>
+            <button class="copy-btn">📋</button>
+        </div>
+    </div>
+
+    <div id="editor"></div>
+
+    <div id="loading" class="text-center mt-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading large file...</p>
+    </div>
+
+    <script>
+        var editor;
+        var saveTimeout;
+        var isLargeFile = {{ 'true' if size > 1000000 else 'false' }};
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.0/min/vs' }});
+        require(["vs/editor/editor.main"], function() {
+            if (isLargeFile) {
+                document.getElementById('loading').style.display = 'block';
+                loadLargeFile('{{ file_id }}');
+            } else {
+                initializeEditor(`{{ code | safe }}`);
+            }
+
+            // Add event listener for Ctrl+A
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'a') {
+                    e.preventDefault();
+                    if (editor) {
+                        editor.setSelection(editor.getModel().getFullModelRange());
+                    }
+                }
+            });
+        });
+
+        function initializeEditor(content) {
+            editor = monaco.editor.create(document.getElementById("editor"), {
+                value: content,
+                theme: "vs-dark",
+                language: "javascript",
+                automaticLayout: true,
+                wordWrap: 'on',
+                minimap: { enabled: false },
+                // Add these options for better keyboard handling
+                accessibilitySupport: 'on',
+                selectOnLineNumbers: true
+            });
+
+            // Add focus handler
+            editor.onDidFocusEditorText(function() {
+                editor.focus();
+            });
+
+            editor.onDidChangeModelContent(function() {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(function() {
+                    saveCode();
+                }, 1000);
+            });
+        }
+
+        function loadLargeFile(fileId) {
+            let chunk = 0;
+            let fullContent = '';
+            
+            function loadNextChunk() {
+                fetch(`/editor/${fileId}/chunk/${chunk}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.chunk) {
+                            fullContent += data.chunk;
+                            if (data.next_chunk !== null) {
+                                chunk = data.next_chunk;
+                                loadNextChunk();
+                            } else {
+                                document.getElementById('loading').style.display = 'none';
+                                initializeEditor(fullContent);
+                            }
+                        }
+                    });
+            }
+            
+            loadNextChunk();
+        }
+
+        function saveCode() {
+            var code = editor.getValue();
+            fetch("/editor/{{ file_id }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ code: code }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Code saved:", data);
+            })
+            .catch(error => {
+                console.error("Error saving code:", error);
+            });
+        }
+
+        document.getElementById("codeForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var modal = document.getElementById("myModal");
+            modal.style.display = "block";
+        });
+
+        document.querySelector(".close").addEventListener("click", function() {
+            var modal = document.getElementById("myModal");
+            modal.style.display = "none";
+        });
+
+        window.onclick = function(event) {
+            var modal = document.getElementById("myModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+
+        document.querySelector(".copy-btn").addEventListener("click", function() {
+            var urlInput = document.getElementById("share-url");
+            urlInput.select();
+            document.execCommand("copy");
+        });
+
+        window.onclick = function(event) {
+            var modal = document.getElementById("myModal");
+            var modalContent = document.querySelector(".custom-modal-content");
+            if (event.target === modal && !modalContent.contains(event.target)) {
+                modal.style.display = "none";
+            }
+        };
+
+        // Add file upload handler
+        document.getElementById('file-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    if (editor) {
+                        editor.setValue(content);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ensure the navbar toggler works on mobile
+        document.querySelector('.navbar-toggler').addEventListener('click', function() {
+            var navbarNav = document.getElementById('navbarNav');
+            if (navbarNav.classList.contains('show')) {
+                navbarNav.classList.remove('show');
+            } else {
+                navbarNav.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>

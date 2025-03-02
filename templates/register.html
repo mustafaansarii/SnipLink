@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.jpg') }}" type="image/x-icon">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .split-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .left-section {
+            flex: 1;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            display: none;
+        }
+        .right-section {
+            flex: 1;
+            background: white;
+            padding: 4rem 2rem;
+            display: flex;
+            align-items: center;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .welcome-image {
+            width: 80%;
+            max-width: 300px;
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 768px) {
+            .left-section {
+                display: flex;
+            }
+            .right-section {
+                padding: 4rem;
+            }
+        }
+        /* Improved form elements */
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+        .form-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .btn-primary {
+            background-color: #6366f1;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            position: relative;
+        }
+        .btn-primary.loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .btn-primary.loading span {
+            visibility: hidden;
+        }
+        .btn-primary:hover {
+            background-color: #4f46e5;
+        }
+        .google-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .google-btn:hover {
+            background-color: #f8f9fa;
+            color: #757575;
+            border: 1px solid #ddd;
+        }
+        #otpDiv {
+            display: none;
+        }
+        .alert-message {
+            display: none;
+            opacity: 0;
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-left: 3rem;
+        }
+        .alert-message.show {
+            display: block;
+            opacity: 1;
+        }
+        .alert-message i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .password-requirements {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="split-container">
+        <!-- Left Section -->
+        <div class="left-section">
+            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991475.png" alt="Welcome" class="welcome-image">
+            <h2 class="mb-3">Join Our Community</h2>
+            <p class="px-4">Already have an account? <a href="{{ url_for('login') }}" class="text-white">Log in here</a></p>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+           
+            <div class="auth-card">
+                <h2 class="text-center mb-4" style="font-size: 1.75rem; color: #1f2937;">
+                    <a href="/" class="text-decoration-none me-2">
+                        <i class="fas fa-arrow-left" style="color: #6366f1;"></i>
+                    </a>
+                    <span>Create Account</span>
+                </h2>
+                
+                <!-- Flash Message Display -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="alert alert-warning text-center mb-3">
+                            {% for category, message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div id="alertMessage" class="alert alert-warning text-center alert-message"></div>
+
+                <form method="post" onsubmit="return validateForm()">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                            <button type="button" class="btn btn-secondary" onclick="sendOTP()" id="otpButton">
+                                <span>Send OTP</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="otpDiv">
+                        <label for="otp" class="form-label">Enter OTP</label>
+                        <input type="text" class="form-control" id="otp" name="otp" placeholder="Enter OTP">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="At least 8 characters with mix of letters, numbers, symbols" 
+                               required
+                               pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$">
+                        <div class="form-text password-requirements">
+                            Password must contain:
+                            <ul class="list-unstyled">
+                                <li><small>> 8 characters</small></li>
+                                <li><small>Uppercase & lowercase letters</small></li>
+                                <li><small>At least one number</small></li>
+                                <li><small>At least one special symbol</small></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" id="submitButton">
+                        <span>Sign Up</span>
+                    </button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('google_login') }}" class="btn google-btn w-100 mb-3">
+                        <i class="fab fa-google me-2"></i>Sign up with Google
+                    </a>
+                </div>
+               
+                <div class="text-center mt-3">
+                    <p>Already have an account? <a href="{{ url_for('login') }}" class="text-decoration-none">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let alertTimeout;
+
+        function showAlert(message) {
+            const alertMessage = document.getElementById('alertMessage');
+            alertMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            alertMessage.classList.add('show');
+            
+            // Clear any existing timeout
+            if (alertTimeout) clearTimeout(alertTimeout);
+            
+            // Hide after 2 seconds with fade-out
+            alertTimeout = setTimeout(() => {
+                alertMessage.classList.remove('show');
+                setTimeout(() => {
+                    alertMessage.style.display = 'none';
+                }, 300); // Wait for transition to complete
+            }, 2000);
+        }
+
+        function validateForm() {
+            const otpDiv = document.getElementById('otpDiv');
+            const otpInput = document.getElementById('otp');
+            const passwordInput = document.getElementById('password');
+            const passwordPattern = new RegExp(passwordInput.pattern);
+
+            if (otpDiv.style.display === 'none' || !otpInput.value.trim()) {
+                showAlert('Please verify your email by requesting and entering an OTP first');
+                otpInput.setAttribute('required', 'true');
+                return false;
+            }
+
+            if (!passwordPattern.test(passwordInput.value)) {
+                showAlert('Password must contain at least 8 characters with uppercase, lowercase, number, and special symbol');
+                return false;
+            }
+
+            return true;
+        }
+
+        function sendOTP() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                showAlert('Please enter your email first');
+                return;
+            }
+
+            fetch('/send-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `email=${encodeURIComponent(email)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showAlert(data.error);
+                } else {
+                    document.getElementById('otpDiv').style.display = 'block';
+                    showAlert('OTP sent successfully to your email');
+                }
+            })
+            .catch(error => {
+                showAlert('Error sending OTP. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>

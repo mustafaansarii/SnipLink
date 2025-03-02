@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Files - SnipLink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='code-slash.svg') }}">
+    <style>
+        body {
+            background: radial-gradient(circle at center, #1a1a1a, #000);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .navbar {
+            background: rgba(33, 37, 41, 0.98) !important;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+            padding: 1rem 2rem;
+        }
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #fff !important;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .navbar-brand:hover {
+            color: #0d6efd !important;
+            transform: scale(1.05);
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        .btn {
+            border-radius: 25px;
+            padding: 0.8rem 1.5rem;
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        .empty-state {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+            color: #fff;
+        }
+        .text-muted {
+            color: #ccc !important;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-code me-2"></i>SnipLink
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('create_new_file') }}">
+                            <i class="fas fa-plus-circle me-2"></i>Create New File
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-danger" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5 pt-5">
+        <h2 class="text-center mb-4 display-4 fw-bold animate__animated animate__fadeInDown">Your Code Files</h2>
+        
+        {% if user_files %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 animate__animated animate__fadeInUp">
+                {% for file_id in user_files %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-file-code me-3 fa-2x text-primary"></i>
+                                    <div>
+                                        <h5 class="card-title mb-0">File {{ loop.index }}</h5>
+                                        <small class="text-muted">ID: {{ file_id }}</small>
+                                    </div>
+                                </div>
+                                <div class="mt-auto d-grid gap-2">
+                                    <a href="{{ url_for('editor', file_id=file_id) }}" class="btn btn-primary">
+                                        <i class="fas fa-edit me-2"></i>Edit Code
+                                    </a>
+                                    <button class="btn btn-danger delete-btn" data-file-id="{{ file_id }}">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center mt-5 empty-state">
+                <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                <h3 class="text-light mb-4">No files found</h3>
+                <a href="{{ url_for('create_new_file') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create New File
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const fileId = this.dataset.fileId;
+                if (confirm('Are you sure you want to delete this file?')) {
+                    fetch(`/delete/${fileId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            // Animate card removal
+                            const card = this.closest('.col');
+                            card.style.transition = 'all 0.3s ease';
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            
+                            setTimeout(() => {
+                                card.remove();
+                                
+                                // If no files left, show the empty state
+                                if (document.querySelectorAll('.col').length === 0) {
+                                    const emptyState = document.createElement('div');
+                                    emptyState.className = 'text-center mt-5 empty-state';
+                                    emptyState.innerHTML = `
+                                        <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                                        <h3 class="text-light mb-4">No files found</h3>
+                                        <a href="{{ url_for('create_new_file') }}" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-plus me-2"></i>Create New File
+                                        </a>`;
+                                    document.querySelector('.row').replaceWith(emptyState);
+                                }
+                            }, 300);
+                        } else {
+                            alert('Error: ' + (data.error || 'Failed to delete file'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to delete file');
+                    });
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>
