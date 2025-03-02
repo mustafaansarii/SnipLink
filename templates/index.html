@@ -26,6 +26,7 @@
             backdrop-filter: blur(15px);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
             padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .navbar-brand {
@@ -65,6 +66,10 @@
             margin-bottom: 2rem;
             color: white;
             animation: float 3s ease-in-out infinite;
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(13, 110, 253, 0.3);
         }
 
         @keyframes float {
@@ -104,6 +109,25 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(13, 110, 253, 0.1), transparent 70%);
+            animation: rotate 10s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .feature-card:hover {
@@ -139,6 +163,30 @@
         @keyframes glow-pulse {
             0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%);
+            animation: rotate 5s linear infinite;
+            z-index: 0;
+        }
+
+        .btn-primary span {
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
@@ -196,14 +244,15 @@
 
     <div class="container">
         <div class="glow"></div>
-        <h1 class="welcome-title animate__animated animate__fadeInDown" style="font-size: 2.5rem;">Welcome to SnipLink</h1>
-        <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s">Your collaborative code editing platform</p>
+        
         
         <div class="row justify-content-center mt-5 animate__animated animate__fadeInUp animate__delay-1s">
             <div class="col-md-10">
                 <div class="card feature-card">
+                    <h1 class="welcome-title animate__animated animate__fadeInDown" style="font-size: 2.5rem;">Welcome to SnipLink</h1>
+                    <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s" style="color: rgba(255, 255, 255, 0.8);">Your collaborative code editing platform</p>
                     <div class="card-body">
-                        <h3 class="card-title mb-4">Features</h3>
+                        <h3 class="card-title mb-4" style="font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #0d6efd, #0b5ed7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Features</h3>
                         <div class="row">
                             <div class="col-md-4 mb-4">
                                 <div class="text-center">
@@ -230,12 +279,13 @@
                         
                         <div class="text-center mt-4">
                             {% if not current_user.is_authenticated %}
-                                <div class="alert alert-warning mb-3" role="alert" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
+                                <div class="alert alert-warning mb-3" role="alert" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); backdrop-filter: blur(5px);">
                                     <i class="fas fa-exclamation-circle me-2"></i>Please login to save your files
                                 </div>
                             {% endif %}
-                            <a href="/new" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, #0d6efd, #0b5ed7); border: none;">
-                                <i class="fas fa-plus-circle me-2"></i>Create New File
+                            <a href="/new" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                <span>Create New File</span>
                             </a>
                         </div>
                     </div>
