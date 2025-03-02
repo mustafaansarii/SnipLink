@@ -3,7 +3,7 @@
 SnipLink is a real-time collaborative code editing platform that allows users to create, edit, and share code snippets with ease. Built with a modern web stack, it provides a seamless coding experience with features like cloud storage, real-time collaboration, and easy sharing.
 
 ## 🌐 Live Demo
-Experience it now: [https://sniplink.onrender.com](https://sniplink.onrender.com)
+Experience it now: [https://sniplinkapp.onrender.com](https://sniplinkapp.onrender.com)
 ![Home Page](static/home.png?text=Home+Page)
 
 ## Key Features
