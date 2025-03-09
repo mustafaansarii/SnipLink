@@ -409,6 +409,31 @@ def editor(file_id):
                 conn.close()
                 return jsonify({"message": "Code saved successfully"}), 200
 
+    # Get file extension from URL or content
+    file_extension = request.args.get('lang') or file_id.split('.')[-1].lower()
+    
+    # Map extensions to Monaco language IDs
+    language_map = {
+        'py': 'python',
+        'js': 'javascript',
+        'html': 'html',
+        'css': 'css',
+        'json': 'json',
+        'php': 'php',
+        'c': 'c',
+        'cpp': 'cpp',
+        'cs': 'csharp',
+        'go': 'go',
+        'rb': 'ruby',
+        'ts': 'typescript',
+        'kt': 'kotlin',
+        'swift': 'swift',
+        'java': 'java',
+        'txt': 'plaintext'
+    }
+    
+    language = language_map.get(file_extension, 'plaintext')
+    
     # Stream large files for reading
     conn = get_db_connection()
     cur = conn.cursor()
@@ -439,7 +464,7 @@ def editor(file_id):
         row = cur.fetchone()
         conn.close()
         code = row["code"] if row else ""
-        return render_template("editor.html", file_id=file_id, code=code, size=size)
+        return render_template("editor.html", file_id=file_id, code=code, size=size, language=language)
 
 # Add pagination endpoint for large files
 @app.route("/editor/<file_id>/chunk/<int:chunk>")
