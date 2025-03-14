@@ -157,7 +157,7 @@
                 document.getElementById('loading').style.display = 'block';
                 loadLargeFile('{{ file_id }}');
             } else {
-                initializeEditor(`{{ code | safe }}`);
+                initializeEditor({{ code | tojson | safe }});
             }
 
             // Add event listener for Ctrl+A
@@ -179,7 +179,6 @@
                 automaticLayout: true,
                 wordWrap: 'on',
                 minimap: { enabled: false },
-                // Add these options for better keyboard handling
                 accessibilitySupport: 'on',
                 selectOnLineNumbers: true
             });
