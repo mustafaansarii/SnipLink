@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnipLink</title>
+    <title>SnipLink - Collaborative Code Editing Platform</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='code-slash.svg') }}">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
         body {
-            background: radial-gradient(circle at center, #1e1e1e, #000);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1e1e, #000);
             color: white;
             min-height: 100vh;
             display: flex;
@@ -25,12 +27,12 @@
             background: rgba(33, 37, 41, 0.98) !important;
             backdrop-filter: blur(15px);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-            padding: 1rem 2rem;
+            padding: 0.5rem 2rem;  /* Decreased padding */
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .navbar-brand {
-            font-size: 1.8rem;
+            font-size: 1.8rem;  /* Slightly decreased font size */
             font-weight: bold;
             color: #fff !important;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
@@ -44,7 +46,7 @@
 
         .btn {
             border-radius: 30px;
-            padding: 0.8rem 2rem;
+            padding: 0.6rem 1.5rem;  /* Decreased padding */
             transition: all 0.3s ease;
             font-weight: 600;
         }
@@ -56,16 +58,15 @@
 
         .container {
             text-align: center;
-            margin-top: 10rem;
+            margin-top: 8rem;  /* Decreased top margin */
             color: white;
         }
 
         .welcome-title {
-            font-size: 4.5rem;
+            font-size: 3rem;
             font-weight: 900;
             margin-bottom: 2rem;
             color: white;
-            animation: float 3s ease-in-out infinite;
             background: linear-gradient(135deg, #0d6efd, #0b5ed7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -77,92 +78,26 @@
             50% { transform: translateY(-10px); }
         }
 
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0073e6, 0 0 20px #0073e6; }
+            to { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #0073e6, 0 0 40px #0073e6; }
+        }
+
         @media (max-width: 768px) {
             .welcome-title {
-                font-size: 2.5rem;
-                animation: none !important;
+                font-size: 3rem;
             }
             .container {
-                margin-top: 5rem;
+                margin-top: 4rem;  /* Decreased top margin for mobile */
             }
             .navbar-nav {
-                display: none;
+                background: rgba(33, 37, 41, 0.9);
+                padding: 0.5rem;  /* Decreased padding */
+                border-radius: 10px;
             }
             .alert {
                 margin-top: 2rem;
             }
-            .feature-card .card-body {
-                display: flex;
-                flex-direction: column;
-            }
-            .feature-card .text-center.mt-4 {
-                order: -1;
-                margin-bottom: 2rem;
-            }
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(13, 110, 253, 0.1), transparent 70%);
-            animation: rotate 10s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .feature-card h5 {
-            color: white;
-        }
-
-        .feature-card p {
-            color: white;
-        }
-
-        .feature-icon {
-            font-size: 3.5rem;
-            color: white;
-            margin-bottom: 1rem;
-        }
-
-        .glow {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(13, 110, 253, 0.3), transparent 70%);
-            top: 0;
-            left: 0;
-            z-index: -1;
-            animation: glow-pulse 3s ease-in-out infinite;
-        }
-
-        @keyframes glow-pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
         }
 
         .btn-primary {
@@ -188,10 +123,31 @@
             position: relative;
             z-index: 1;
         }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(13, 110, 253, 0.4);
+        }
+
+        .dropdown-menu {
+            background: rgba(45, 45, 45, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-item {
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(13, 110, 253, 0.2);
+            color: #0d6efd;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: linear-gradient(135deg, #1a1a1a, #2d2d2d); box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: linear-gradient(135deg, #1a1a1a, #2d2d2d); box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
         <div class="container-fluid">
             <a class="navbar-brand" href="/" style="font-size: 1.8rem; font-weight: 700; letter-spacing: 0.5px;">
                 <i class="fas fa-code me-2" style="color: #0d6efd;"></i>SnipLink
@@ -203,7 +159,7 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                    
                     <li class="nav-item">
-                        <a class="nav-link text-decoration-none" href="{{ url_for('create_new_file') }}" style="font-size: 1.1rem; padding: 0.5rem 1rem;">
+                        <a class="nav-link text-decoration-none" href="{{ url_for('create_new_file') }}" style="font-size: 1rem; padding: 0.4rem 0.8rem;">
                             <i class="fas fa-plus-circle me-1"></i>Create New File
                         </a>
                     </li>
@@ -211,29 +167,29 @@
                 <div class="d-flex align-items-center gap-2">
                     {% if current_user.is_authenticated %}
                         <div class="dropdown">
-                            <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 25px; padding: 0.5rem 1.5rem;">
+                            <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 25px; padding: 0.4rem 1.2rem;">
                                 <i class="fas fa-user-circle me-2"></i>
                                 <span style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ current_user.name }}</span>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="background: #2d2d2d; border: 1px solid #444;">
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li>
-                                    <a class="dropdown-item text-white" href="{{ url_for('user_codes') }}" style="transition: all 0.3s ease;">
+                                    <a class="dropdown-item" href="{{ url_for('user_codes') }}">
                                         <i class="fas fa-folder me-2"></i>My Files
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider" style="border-color: #444;"></li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item text-danger" href="{{ url_for('logout') }}" style="transition: all 0.3s ease;">
+                                    <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
                                         <i class="fas fa-sign-out-alt me-2"></i>Logout
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     {% else %}
-                        <a href="{{ url_for('login') }}" class="btn btn-outline-light d-flex align-items-center" style="border-radius: 25px; padding: 0.5rem 1.5rem;">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light d-flex align-items-center" style="border-radius: 25px; padding: 0.4rem 1.2rem;">
                             <i class="fas fa-sign-in-alt me-2"></i>Login
                         </a>
-                        <a href="{{ url_for('register') }}" class="btn btn-primary d-flex align-items-center" style="border-radius: 25px; padding: 0.5rem 1.5rem;">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary d-flex align-items-center" style="border-radius: 25px; padding: 0.4rem 1.2rem;">
                             <i class="fas fa-user-plus me-2"></i>Register
                         </a>
                     {% endif %}
@@ -243,55 +199,64 @@
     </nav>
 
     <div class="container">
-        <div class="glow"></div>
+        <h1 class="welcome-title">Welcome to SnipLink</h1>
+        <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s" style="color: rgba(255, 255, 255, 0.8); font-size: 1.2rem;">Your ultimate collaborative code editing platform</p>
         
-        
-        <div class="row justify-content-center mt-5 animate__animated animate__fadeInUp animate__delay-1s">
-            <div class="col-md-10">
-                <div class="card feature-card">
-                    <h1 class="welcome-title animate__animated animate__fadeInDown" style="font-size: 2.5rem;">Welcome to SnipLink</h1>
-                    <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s" style="color: rgba(255, 255, 255, 0.8);">Your collaborative code editing platform</p>
-                    <div class="card-body">
-                        <h3 class="card-title mb-4" style="font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #0d6efd, #0b5ed7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Features</h3>
-                        <div class="row">
-                            <div class="col-md-4 mb-4">
-                                <div class="text-center">
-                                    <i class="fas fa-code feature-icon"></i>
-                                    <h5>Real-time Editing</h5>
-                                    <p>Collaborate in real-time with others</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-4">
-                                <div class="text-center">
-                                    <i class="fas fa-cloud-upload-alt feature-icon"></i>
-                                    <h5>Cloud Storage</h5>
-                                    <p>Save and access your code from anywhere</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-4">
-                                <div class="text-center">
-                                    <i class="fas fa-share-alt feature-icon"></i>
-                                    <h5>Easy Sharing</h5>
-                                    <p>Share your code with a simple link</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="text-center mt-4">
-                            {% if not current_user.is_authenticated %}
-                                <div class="alert alert-warning mb-3" role="alert" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); backdrop-filter: blur(5px);">
-                                    <i class="fas fa-exclamation-circle me-2"></i>Please login to save your files
-                                </div>
-                            {% endif %}
-                            <a href="/new" class="btn btn-primary btn-lg">
-                                <i class="fas fa-plus-circle me-2"></i>
-                                <span>Create New File</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+        <h3 class="mb-4" style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #0d6efd, #0b5ed7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Powerful Features</h3>
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-code" style="font-size: 3rem; color: #0d6efd;"></i>
+                <h5 class="mt-3">Real-time Collaboration</h5>
+                <p>Code together in real-time with your team</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #0d6efd;"></i>
+                <h5 class="mt-3">Secure Cloud Storage</h5>
+                <p>Access your code from anywhere, anytime</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-share-alt" style="font-size: 3rem; color: #0d6efd;"></i>
+                <h5 class="mt-3">Instant Sharing</h5>
+                <p>Share your code snippets with a single click</p>
             </div>
         </div>
+        
+        <div class="mt-5">
+            {% if not current_user.is_authenticated %}
+                <div class=" mb-4"  >
+                    <i class="fas fa-exclamation-circle me-2"></i>Sign in to unlock all features and save your work
+                </div>
+            {% endif %}
+            <a href="/new" class="btn btn-primary btn-lg animate__animated animate__pulse animate__infinite">
+                <i class="fas fa-rocket me-2"></i>
+                <span>Start Coding Now</span>
+            </a>
+        </div>
     </div>
+
+    <footer class="mt-5 py-3 text-center fixed-bottom ">
+        <p class="mb-0">&copy; 2025 SnipLink. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#ffffff" },
+                shape: { type: "circle", stroke: { width: 0, color: "#000000" }, polygon: { nb_sides: 5 }, image: { src: "img/github.svg", width: 100, height: 100 } },
+                opacity: { value: 0.5, random: false, anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false } },
+                size: { value: 3, random: true, anim: { enable: false, speed: 40, size_min: 0.1, sync: false } },
+                line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 6, direction: "none", random: false, straight: false, out_mode: "out", bounce: false, attract: { enable: false, rotateX: 600, rotateY: 1200 } }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
+                modes: { grab: { distance: 400, line_linked: { opacity: 1 } }, bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 }, repulse: { distance: 200, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 } }
+            },
+            retina_detect: true
+        });
+    </script>
 </body>
 </html>
