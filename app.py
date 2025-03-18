@@ -86,13 +86,13 @@ def cleanup_expired_files():
         cur.execute("""
             DELETE FROM code_snippets 
             WHERE user_id IS NULL 
-            AND created_at < datetime('now', '-5 minutes')
+            AND created_at < datetime('now', '-100 days')
         """)
         
         cur.execute("""
             DELETE FROM code_snippets 
             WHERE user_id IS NOT NULL 
-            AND created_at < datetime('now', '-7 days')
+            AND created_at < datetime('now', '-100 days')
         """)
         
         conn.commit()
