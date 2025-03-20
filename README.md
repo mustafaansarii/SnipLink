@@ -33,5 +33,6 @@ Experience it now: [https://sniplinkapp.onrender.com](https://sniplinkapp.onrend
 ## Screenshots
 
 
+ 
 ![Editor View](static/editor.png?text=Editor+View)
 ![File Management](static/folders.png?text=File+Management)
