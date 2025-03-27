@@ -20,146 +20,76 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
         }
 
         .navbar {
             background: rgba(33, 37, 41, 0.98) !important;
             backdrop-filter: blur(15px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-            padding: 0.5rem 2rem;  /* Decreased padding */
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .navbar-brand {
-            font-size: 1.8rem;  /* Slightly decreased font size */
-            font-weight: bold;
-            color: #fff !important;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-            transition: all 0.3s ease;
+        .hero-section {
+            padding: 6rem 0 3rem;
+            background: rgba(0, 0, 0, 0.4);
+            margin-bottom: 3rem;
         }
 
-        .navbar-brand:hover {
-            color: #0d6efd !important;
-            transform: scale(1.05);
-        }
-
-        .btn {
-            border-radius: 30px;
-            padding: 0.6rem 1.5rem;  /* Decreased padding */
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .container {
-            text-align: center;
-            margin-top: 8rem;  /* Decreased top margin */
-            color: white;
-        }
-
-        .welcome-title {
-            font-size: 3rem;
-            font-weight: 900;
-            margin-bottom: 2rem;
-            color: white;
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(13, 110, 253, 0.3);
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0073e6, 0 0 20px #0073e6; }
-            to { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #0073e6, 0 0 40px #0073e6; }
-        }
-
-        @media (max-width: 768px) {
-            .welcome-title {
-                font-size: 3rem;
-            }
-            .container {
-                margin-top: 4rem;  /* Decreased top margin for mobile */
-            }
-            .navbar-nav {
-                background: rgba(33, 37, 41, 0.9);
-                padding: 0.5rem;  /* Decreased padding */
-                border-radius: 10px;
-            }
-            .alert {
-                margin-top: 2rem;
-            }
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%);
-            animation: rotate 5s linear infinite;
-            z-index: 0;
-        }
-
-        .btn-primary span {
-            position: relative;
-            z-index: 1;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 10px 20px rgba(13, 110, 253, 0.4);
-        }
-
-        .dropdown-menu {
-            background: rgba(45, 45, 45, 0.9);
-            backdrop-filter: blur(10px);
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .dropdown-item {
-            color: white;
-            transition: all 0.3s ease;
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .dropdown-item:hover {
-            background: rgba(13, 110, 253, 0.2);
+        .feature-icon {
+            font-size: 2.5rem;
             color: #0d6efd;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(11, 94, 215, 0.1));
+            padding: 3rem 0;
+            border-radius: 1rem;
+            margin: 3rem 0;
+        }
+
+        .footer {
+            background: rgba(33, 37, 41, 0.98);
+            padding: 1.5rem 0;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 4rem 0 2rem;
+            }
+            
+            .feature-card {
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: linear-gradient(135deg, #1a1a1a, #2d2d2d); box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/" style="font-size: 1.8rem; font-weight: 700; letter-spacing: 0.5px;">
+            <a class="navbar-brand" href="/">
                 <i class="fas fa-code me-2" style="color: #0d6efd;"></i>SnipLink
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                   
                     <li class="nav-item">
-                        <a class="nav-link text-decoration-none" href="{{ url_for('create_new_file') }}" style="font-size: 1rem; padding: 0.4rem 0.8rem;">
+                        <a class="nav-link" href="{{ url_for('create_new_file') }}">
                             <i class="fas fa-plus-circle me-1"></i>Create New File
                         </a>
                     </li>
@@ -167,29 +97,21 @@
                 <div class="d-flex align-items-center gap-2">
                     {% if current_user.is_authenticated %}
                         <div class="dropdown">
-                            <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 25px; padding: 0.4rem 1.2rem;">
+                            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle me-2"></i>
-                                <span style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ current_user.name }}</span>
+                                <span>{{ current_user.name }}</span>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('user_codes') }}">
-                                        <i class="fas fa-folder me-2"></i>My Files
-                                    </a>
-                                </li>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('user_codes') }}"><i class="fas fa-folder me-2"></i>My Files</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </a>
-                                </li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                             </ul>
                         </div>
                     {% else %}
-                        <a href="{{ url_for('login') }}" class="btn btn-outline-light d-flex align-items-center" style="border-radius: 25px; padding: 0.4rem 1.2rem;">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light">
                             <i class="fas fa-sign-in-alt me-2"></i>Login
                         </a>
-                        <a href="{{ url_for('register') }}" class="btn btn-primary d-flex align-items-center" style="border-radius: 25px; padding: 0.4rem 1.2rem;">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">
                             <i class="fas fa-user-plus me-2"></i>Register
                         </a>
                     {% endif %}
@@ -198,44 +120,65 @@
         </div>
     </nav>
 
-    <div class="container">
-        <h1 class="welcome-title">Welcome to SnipLink</h1>
-        <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s" style="color: rgba(255, 255, 255, 0.8); font-size: 1.2rem;">Your ultimate collaborative code editing platform</p>
-        
-        <h3 class="mb-4" style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #0d6efd, #0b5ed7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Powerful Features</h3>
-        <div class="row justify-content-center">
-            <div class="col-md-4 mb-4">
-                <i class="fas fa-code" style="font-size: 3rem; color: #0d6efd;"></i>
-                <h5 class="mt-3">Real-time Collaboration</h5>
-                <p>Code together in real-time with your team</p>
-            </div>
-            <div class="col-md-4 mb-4">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #0d6efd;"></i>
-                <h5 class="mt-3">Secure Cloud Storage</h5>
-                <p>Access your code from anywhere, anytime</p>
-            </div>
-            <div class="col-md-4 mb-4">
-                <i class="fas fa-share-alt" style="font-size: 3rem; color: #0d6efd;"></i>
-                <h5 class="mt-3">Instant Sharing</h5>
-                <p>Share your code snippets with a single click</p>
-            </div>
-        </div>
-        
-        <div class="mt-5">
-            {% if not current_user.is_authenticated %}
-                <div class=" mb-4"  >
-                    <i class="fas fa-exclamation-circle me-2"></i>Sign in to unlock all features and save your work
+    <div class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center py-5 py-md-0">
+                    <h1 class="display-4 fw-bold mb-4" style="font-size: calc(1.5rem + 2vw);">Welcome to SnipLink</h1>
+                    <p class="lead mb-4 opacity-75">Your ultimate collaborative code editing platform</p>
+                    {% if not current_user.is_authenticated %}
+                    <p class="mb-4 opacity-75 small">Sign in to unlock all features and save your work!</p>
+                    {% endif %}
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <a href="/new" class="btn btn-primary btn-lg px-4 gap-3">
+                            <i class="fas fa-rocket me-2"></i>Start Coding Now
+                        </a>
+                        {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i>Sign In
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
-            {% endif %}
-            <a href="/new" class="btn btn-primary btn-lg animate__animated animate__pulse animate__infinite">
-                <i class="fas fa-rocket me-2"></i>
-                <span>Start Coding Now</span>
-            </a>
+            </div>
         </div>
     </div>
 
-    <footer class="mt-5 py-3 text-center fixed-bottom ">
-        <p class="mb-0">&copy; 2025 SnipLink. All rights reserved.</p>
+    <div class="container mb-5">
+        <div class="row g-4">
+            <div class="col-12 text-center mb-4">
+                <h2 class="fw-bold text-white">Powerful Features</h2>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-card h-100">
+                    <i class="fas fa-code feature-icon"></i>
+                    <h5 class="fw-bold mb-3 text-white">Real-time Collaboration</h5>
+                    <p class="text-white mb-0">Code together in real-time with your team members. Share ideas and solve problems instantly.</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-card h-100">
+                    <i class="fas fa-cloud-upload-alt feature-icon"></i>
+                    <h5 class="fw-bold mb-3 text-white">Secure Cloud Storage</h5>
+                    <p class="text-white mb-0">Your code is safely stored in the cloud, accessible from anywhere at any time.</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-card h-100">
+                    <i class="fas fa-share-alt feature-icon"></i>
+                    <h5 class="fw-bold mb-3 text-white">Instant Sharing</h5>
+                    <p class="text-white mb-0">Share your code snippets with a single click. Perfect for collaboration and learning.</p>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <footer class="footer text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 SnipLink. All rights reserved.</p>
+        </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
