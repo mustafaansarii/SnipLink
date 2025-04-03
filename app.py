@@ -28,6 +28,11 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
+# Add these configurations for persistent sessions
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=31)  # Sessions last for 31 days
+app.config['SESSION_PERMANENT'] = True
+app.config['SESSION_TYPE'] = 'filesystem'
+
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -296,7 +301,6 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # If the user is already logged in, redirect to the homepage
     if current_user.is_authenticated:
         return redirect(url_for("index"))
 
@@ -312,7 +316,9 @@ def login():
         conn.close()
 
         if user and bcrypt.check_password_hash(user["password"], password):
-            login_user(User(user["id"], user["name"], user["email"]))
+            # Make the session permanent before logging in
+            session.permanent = True
+            login_user(User(user["id"], user["name"], user["email"]), remember=True)
             return redirect(url_for("index"))
         else:
             flash("Invalid email or password.", "danger")
@@ -350,8 +356,9 @@ def auth_callback():
     
     conn.close()
     
-    # Log in the user
-    login_user(User(user["id"], user["name"], email))
+    # Make the session permanent before logging in
+    session.permanent = True
+    login_user(User(user["id"], user["name"], email), remember=True)
     return redirect(url_for('index'))
 
 @app.route("/logout")
