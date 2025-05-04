@@ -194,6 +194,25 @@
                     saveCode();
                 }, 1000);
             });
+
+            // Highlight text in editor
+            editor.onDidChangeCursorSelection(function(e) {
+                var selection = editor.getSelection();
+                var model = editor.getModel();
+                if (selection && !selection.isEmpty()) {
+                    var decorations = editor.deltaDecorations([], [
+                        {
+                            range: selection,
+                            options: {
+                                inlineClassName: 'highlighted-text'
+                            }
+                        }
+                    ]);
+                    setTimeout(function() {
+                        editor.deltaDecorations(decorations, []);
+                    }, 1500);
+                }
+            });
         }
 
         function loadLargeFile(fileId) {

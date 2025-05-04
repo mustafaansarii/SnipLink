@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, session, flash, Response, stream_with_context
-import sqlite3
-import uuid
 import os
+from dotenv import load_dotenv
+import psycopg2
+import uuid
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,8 +10,6 @@ from datetime import datetime, timedelta
 import threading
 import time
 from authlib.integrations.flask_client import OAuth
-from dotenv import load_dotenv
-import os
 from flask_mail import Mail, Message
 import random
 import string
@@ -60,11 +59,10 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
 )
 
-DATABASE_FILE = "database.db"
+DATABASE_URL = os.getenv("DataBase_URL")
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE_FILE)
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
 
 def init_db():
@@ -72,12 +70,23 @@ def init_db():
     cur = conn.cursor()
     cur.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             email TEXT UNIQUE,
             password TEXT NOT NULL
         )
     ''')
+    
+    # Also update your code_snippets table if you have one
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS code_snippets (
+            id TEXT PRIMARY KEY,
+            code TEXT NOT NULL,
+            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+            created_at TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -91,13 +100,13 @@ def cleanup_expired_files():
         cur.execute("""
             DELETE FROM code_snippets 
             WHERE user_id IS NULL 
-            AND created_at < datetime('now', '-100 days')
+            AND created_at < (CURRENT_TIMESTAMP - INTERVAL '100 days')
         """)
         
         cur.execute("""
             DELETE FROM code_snippets 
             WHERE user_id IS NOT NULL 
-            AND created_at < datetime('now', '-100 days')
+            AND created_at < (CURRENT_TIMESTAMP - INTERVAL '100 days')
         """)
         
         conn.commit()
@@ -151,7 +160,7 @@ class CodeSnippetModel:
         self.created_at = created_at
 
 # Add views to admin panel
-engine = create_engine(f'sqlite:///{DATABASE_FILE}')
+engine = create_engine(DATABASE_URL)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
@@ -185,7 +194,7 @@ class User(UserMixin):
 def load_user(user_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, email FROM users WHERE id = ?", (user_id,))
+    cur.execute("SELECT id, name, email FROM users WHERE id = %s", (user_id,))
     row = cur.fetchone()
     conn.close()
 
@@ -202,8 +211,8 @@ def index():
 def user_codes():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM code_snippets WHERE user_id = ?", (current_user.id,))
-    user_files = [row["id"] for row in cur.fetchall()]
+    cur.execute("SELECT id FROM code_snippets WHERE user_id = %s", (current_user.id,))
+    user_files = [row[0] for row in cur.fetchall()]
     conn.close()
 
     return render_template("codes.html", user_files=user_files)
@@ -220,7 +229,7 @@ def send_otp():
     # Check if email already exists
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM users WHERE email = ?", (email,))
+    cur.execute("SELECT id FROM users WHERE email = %s", (email,))
     if cur.fetchone():
         conn.close()
         return jsonify({"error": "Email already exists"}), 400
@@ -280,7 +289,7 @@ def register():
         cur = conn.cursor()
         
         try:
-            cur.execute("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", 
+            cur.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", 
                        (name, email, hashed_password))
             conn.commit()
             
@@ -291,8 +300,8 @@ def register():
             
             flash("Account created successfully! Please log in.", "success")
             return redirect(url_for("login"))
-        except sqlite3.IntegrityError:
-            flash("Email already exists", "danger")
+        except Exception as e:
+            flash(f"Error creating account: {str(e)}", "danger")
             return redirect(url_for("register"))
         finally:
             conn.close()
@@ -310,15 +319,15 @@ def login():
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, password, name, email FROM users WHERE email = ?", 
+        cur.execute("SELECT id, password, name, email FROM users WHERE email = %s", 
                    (email,))
         user = cur.fetchone()
         conn.close()
 
-        if user and bcrypt.check_password_hash(user["password"], password):
+        if user and bcrypt.check_password_hash(user[1], password):
             # Make the session permanent before logging in
             session.permanent = True
-            login_user(User(user["id"], user["name"], user["email"]), remember=True)
+            login_user(User(user[0], user[2], user[3]), remember=True)
             return redirect(url_for("index"))
         else:
             flash("Invalid email or password.", "danger")
@@ -342,23 +351,23 @@ def auth_callback():
     cur = conn.cursor()
     
     # Check if user exists by email
-    cur.execute("SELECT id, name FROM users WHERE email = ?", (email,))
+    cur.execute("SELECT id, name FROM users WHERE email = %s", (email,))
     user = cur.fetchone()
     
     if not user:
         # Create new user if they don't exist
         password = bcrypt.generate_password_hash(str(uuid.uuid4())).decode("utf-8")
-        cur.execute("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", 
+        cur.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", 
                    (name, email, password))
         conn.commit()
-        cur.execute("SELECT id, name FROM users WHERE email = ?", (email,))
+        cur.execute("SELECT id, name FROM users WHERE email = %s", (email,))
         user = cur.fetchone()
     
     conn.close()
     
     # Make the session permanent before logging in
     session.permanent = True
-    login_user(User(user["id"], user["name"], email), remember=True)
+    login_user(User(user[0], user[1], email), remember=True)
     return redirect(url_for('index'))
 
 @app.route("/logout")
@@ -379,42 +388,29 @@ def editor(file_id):
             data = request.get_json()
             code = data['code']
             
-            # Process in chunks if data is large
-            if len(code) > 1000000:  # 1MB
-                def save_chunks():
-                    conn = get_db_connection()
-                    cur = conn.cursor()
-                    chunk_size = 500000  # 500KB chunks
-                    for i in range(0, len(code), chunk_size):
-                        chunk = code[i:i+chunk_size]
-                        if i == 0:
-                            cur.execute("""
-                                INSERT INTO code_snippets (id, code, user_id, created_at) 
-                                VALUES (?, ?, ?, datetime('now'))
-                            """, (file_id, chunk, current_user.id if current_user.is_authenticated else None))
-                        else:
-                            cur.execute("""
-                                UPDATE code_snippets 
-                                SET code = code || ? 
-                                WHERE id = ?
-                            """, (chunk, file_id))
-                        conn.commit()
-                    conn.close()
-                
-                # Use streaming response for large files
-                return Response(stream_with_context(save_chunks()), content_type='application/json')
-            else:
-                # Normal processing for smaller files
-                conn = get_db_connection()
-                cur = conn.cursor()
-                user_id = current_user.id if current_user.is_authenticated else None
+            conn = get_db_connection()
+            cur = conn.cursor()
+            user_id = current_user.id if current_user.is_authenticated else None
+            
+            # Check if record exists
+            cur.execute("SELECT id FROM code_snippets WHERE id = %s", (file_id,))
+            exists = cur.fetchone()
+            
+            if exists:
                 cur.execute("""
-                    INSERT OR REPLACE INTO code_snippets (id, code, user_id, created_at) 
-                    VALUES (?, ?, ?, datetime('now'))
+                    UPDATE code_snippets 
+                    SET code = %s, user_id = %s, created_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (code, user_id, file_id))
+            else:
+                cur.execute("""
+                    INSERT INTO code_snippets (id, code, user_id, created_at) 
+                    VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
                 """, (file_id, code, user_id))
-                conn.commit()
-                conn.close()
-                return jsonify({"message": "Code saved successfully"}), 200
+                
+            conn.commit()
+            conn.close()
+            return jsonify({"message": "Code saved successfully"}), 200
 
     # Get file extension from URL or content
     file_extension = request.args.get('lang') or file_id.split('.')[-1].lower()
@@ -441,37 +437,17 @@ def editor(file_id):
     
     language = language_map.get(file_extension, 'plaintext')
     
-    # Stream large files for reading
     conn = get_db_connection()
     cur = conn.cursor()
-    
-    # Get file size
-    cur.execute("SELECT LENGTH(code) as size FROM code_snippets WHERE id = ?", (file_id,))
+    cur.execute("SELECT code FROM code_snippets WHERE id = %s", (file_id,))
     row = cur.fetchone()
-    size = row["size"] if row else 0
+    conn.close()
     
-    if size > 1000000:  # Stream if > 1MB
-        def generate():
-            chunk_size = 500000
-            offset = 0
-            while True:
-                cur.execute("SELECT SUBSTR(code, ?, ?) as chunk FROM code_snippets WHERE id = ?", 
-                          (offset + 1, chunk_size, file_id))
-                chunk = cur.fetchone()["chunk"]
-                if not chunk:
-                    break
-                yield chunk
-                offset += chunk_size
-            conn.close()
-        
-        return Response(stream_with_context(generate()), content_type='text/plain')
-    else:
-        # Normal read for smaller files
-        cur.execute("SELECT code FROM code_snippets WHERE id = ?", (file_id,))
-        row = cur.fetchone()
-        conn.close()
-        code = row["code"] if row else ""
-        return render_template("editor.html", file_id=file_id, code=code, size=size, language=language)
+    code = row[0] if row else ""
+    # Calculate the size of the code
+    size = len(code.encode('utf-8')) if code else 0
+    
+    return render_template("editor.html", file_id=file_id, code=code, language=language, size=size)
 
 # Add pagination endpoint for large files
 @app.route("/editor/<file_id>/chunk/<int:chunk>")
@@ -480,13 +456,13 @@ def get_chunk(file_id, chunk):
     cur = conn.cursor()
     chunk_size = 500000
     offset = chunk * chunk_size
-    cur.execute("SELECT SUBSTR(code, ?, ?) as chunk FROM code_snippets WHERE id = ?", 
+    cur.execute("SELECT SUBSTR(code, %s, %s) as chunk FROM code_snippets WHERE id = %s", 
                (offset + 1, chunk_size, file_id))
     data = cur.fetchone()
     conn.close()
     return jsonify({
-        'chunk': data["chunk"] if data else None,
-        'next_chunk': chunk + 1 if data and len(data["chunk"]) == chunk_size else None
+        'chunk': data[0] if data else None,
+        'next_chunk': chunk + 1 if data and len(data[0]) == chunk_size else None
     })
 
 # Add memory monitoring endpoint
@@ -505,15 +481,15 @@ def delete_file(file_id):
     cur = conn.cursor()
     
     # Verify the file belongs to the current user
-    cur.execute("SELECT user_id FROM code_snippets WHERE id = ?", (file_id,))
+    cur.execute("SELECT user_id FROM code_snippets WHERE id = %s", (file_id,))
     file = cur.fetchone()
     
-    if not file or file["user_id"] != current_user.id:
+    if not file or file[0] != current_user.id:
         conn.close()
         return jsonify({"error": "File not found or unauthorized"}), 404
     
     try:
-        cur.execute("DELETE FROM code_snippets WHERE id = ?", (file_id,))
+        cur.execute("DELETE FROM code_snippets WHERE id = %s", (file_id,))
         conn.commit()
         conn.close()
         return jsonify({"message": "File deleted successfully"}), 200
